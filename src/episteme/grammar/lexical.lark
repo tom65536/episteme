@@ -1,0 +1,11 @@
+#
+# Lexical symbols for EPISTEME.
+#
+%import cc (ID_START, ID_MEDIAL, ID_CONT, OPERATORS, SPACE, DIGIT)
+
+
+%ignore SPACE
+
+IDENTIFIER: ID_START (ID_CONT)* (ID_MEDIAL (ID_CONT)+)*
+
+
