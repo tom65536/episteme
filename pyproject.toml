@@ -1,78 +1,73 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
 
 [project]
 name = "episteme"
-dynamic = ["version"]
-description = 'Expressive Programming In STEM Education'
 readme = "README.md"
-requires-python = ">=3.10"
-license = "MIT"
-keywords = []
-authors = [
-  { name = "tom65536", email = "peregrinus@planet.ms" },
-]
+license = {file = "LICENSE"}
 classifiers = [
-  "Development Status :: 4 - Beta",
-  "Programming Language :: Python",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed"
 ]
+dynamic = ["version", "description"]
 dependencies = [
-    "lark~=1.2"
+    "lark~=1.1"
 ]
+requires-python = ">=3.11"
+
+[[project.authors]]
+name = "tom65536"
+email = "peregrinus@planet.ms"
 
 [project.urls]
-Documentation = "https://github.com/unknown/episteme#readme"
-Issues = "https://github.com/unknown/episteme/issues"
-Source = "https://github.com/unknown/episteme"
+Home = "https://github.com/tom65536/episteme"
+Source = "https://github.com/tom65536/episteme"
+Documentation = "https://episteme.readthedocs.io/latest/"
+Pypi = "https://pypi.org/project/episteme/"
+Issues = "https://github.com/tom65536/episteme/issues"
+Changelog = "https://github.com/tom65536/episteme/blob/main/CHANGELOG.md"
 
-[tool.hatch.version]
-path = "src/episteme/__about__.py"
-
-[tool.hatch.envs.default]
-dependencies = [
-  "coverage[toml]>=6.5",
-  "pytest",
-]
-[tool.hatch.envs.default.scripts]
-test = "pytest {args:tests}"
-test-cov = "coverage run -m pytest {args:tests}"
-cov-report = [
-  "- coverage combine",
-  "coverage report",
-]
-cov = [
-  "test-cov",
-  "cov-report",
+[project.optional-dependencies]
+build = [
+    "build ~= 1.2"
 ]
 
-[[tool.hatch.envs.all.matrix]]
-python = ["3.10", "3.11", "3.12"]
 
-[tool.hatch.envs.types]
-dependencies = [
-  "mypy>=1.0.0",
+[tool.isort]
+line_length=79
+multi_line_output=3
+profile="black"
+
+[tool.mypy]
+warn_unused_configs = true
+packages = "episteme"
+
+[tool.bandit]
+tests = ["B101", "B102", "B110", "B112"]
+
+[tool.vulture]
+paths = ["src/episteme", "tests"]
+
+[tool.black]
+skip-string-normalization = true
+line-length=79
+
+[tool.semantic_release]
+version_variables = [
+    "src/episteme/__about__.py:__version__",
+    "docs/source/conf.py:release"
 ]
-[tool.hatch.envs.types.scripts]
-check = "mypy --install-types --non-interactive {args:src/episteme tests}"
+build_command = """
+    python -m pip install -e .[build]
+    python -m build .
+"""
 
-[tool.coverage.run]
-source_pkgs = ["episteme", "tests"]
-branch = true
-parallel = true
-omit = [
-  "src/episteme/__about__.py",
-]
-
-[tool.coverage.paths]
-episteme = ["src/episteme", "*/episteme/src/episteme"]
-tests = ["tests", "*/episteme/tests"]
-
-[tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
-]
+[tool.pydoclint]
+style = 'numpy'

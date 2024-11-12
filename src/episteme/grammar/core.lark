@@ -1,0 +1,8 @@
+
+%import cc.SPACE
+%import lexical.IDENTIFIER
+
+%ignore SPACE
+
+start: (IDENTIFIER)+
+
