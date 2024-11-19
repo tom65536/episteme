@@ -1,10 +1,12 @@
 #
 # Lexical symbols for EPISTEME.
 #
-%import cc (ID_START, ID_MEDIAL, ID_CONT, OPERATORS,  DIGIT)
+%import cc (ID_START, ID_MEDIAL, ID_CONT, OPERATORS,  DIGIT, SPACE)
 
 
 
 IDENTIFIER: ID_START (ID_CONT)* (ID_MEDIAL (ID_CONT)+)*
 
+COMMENT: /[#\uFE5F\uFF03][^\n\r\x0B\x0C\x85\u2028\u2029]*/
 
+_NEWLINE: ( /\r?\n/ (SPACE)* | COMMENT )+

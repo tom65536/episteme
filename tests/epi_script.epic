@@ -1,0 +1,17 @@
+#!/bin/epic
+# Module Doc
+#
+# This is a test module.
+
+# this is just a comment, ignore it
+Anström α_1
+
+# the run doc
+def run it:
+
+    # docdoc
+    def inner:
+        pass
+
+    def second:
+        unreachble

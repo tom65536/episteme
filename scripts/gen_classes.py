@@ -1,16 +1,28 @@
 """Script to generate Unicode based character classes for Esteme parser."""
 
-import re
 import unicodedata as ud
+from collections.abc import Iterator
 
+__all__ = []
+
+ESCAPES = {
+    '"': r'\"',
+    "'": r"\'",
+    '\\': r'\\',
+    '\r': r'\r',
+    '\n': r'\n',
+    '\t': r'\t',
+    '\v': r'\v',
+}
 
 # Run over all codepoints up to this limit
 MAX_CP = 0x10FFFF
 
-
 # Symbols not to be included otherwise
-SYNTAX = '$,.;:#()[]{}\"\'!?`\\=@'
+SYNTAX = '$,.;:#()[]}{\"\'!?`\\=@'
 
+# Map non-terminals to pairs of Unicode classes and characters
+# which should be included in their definitions.
 CLASS_INFO = {
     'ID_START': (('L', 'Nl', 'Sc'), ''),
     'ID_MEDIAL': (('Pc',), '_'),
@@ -20,28 +32,38 @@ CLASS_INFO = {
     'DIGIT': (('Nd',), ''),
 }
 
-classes = {
-    name: [] for name in CLASS_INFO.keys()
-}
+classes = {name: [] for name in CLASS_INFO.keys()}
 
 
-def classify(cp: int) -> None:
-    try:
-        ch = chr(cp)
-        if ch in SYNTAX:
-            return
-        cl = ud.category(ch)
-        for class_name, (cats, incs) in CLASS_INFO.items():
-            if (
-                ch in incs or
-                any(cl.startswith(cat) for cat in cats)
-            ):
-                classes[class_name].append(cp)
-    except UnicodeEncodeError:
-        return
+def encode_list(lst: list[int]) -> str:
+    """Encode a list of code points as pattern for Lark.
+
+    Parameters
+    ----------
+    lst : list[int]
+        list of code points
+
+    Returns
+    -------
+    str
+        the encoded pattern
+    """
+    return '\n    |'.join(encode_range(rg) for rg in compress_ranges(lst))
 
 
-def compress_ranges(lst: list[int]) -> list[range]:
+def compress_ranges(lst: list[int]) -> Iterator[range]:
+    """Replace code points by ranges of codepoints.
+
+    Parameters
+    ----------
+    lst : list[int]
+        list of code points
+
+    Yields
+    ------
+    range
+        ranges of code points
+    """
     prev = -2
     start = None
 
@@ -54,36 +76,69 @@ def compress_ranges(lst: list[int]) -> list[range]:
     if start is not None:
         yield range(start, prev + 1)
 
-def encode_cp(cp):
+
+def encode_range(rg: range) -> str:
+    """Encode a range of code points as pattern for Lark.
+
+    Parameters
+    ----------
+    rg : range
+        the range of code points
+
+    Returns
+    -------
+    str
+        the encoded pattern
+    """
+    if len(rg) == 1:
+        return encode_code_point(rg.start)
+    return encode_code_point(rg.start) + '..' + encode_code_point(rg.stop - 1)
+
+
+def encode_code_point(cp: int) -> str:
+    """Encode a single code point as pattern for Lark.
+
+    Parameters
+    ----------
+    cp : int
+        the code point
+
+    Returns
+    -------
+    str
+        the encoded pattern
+    """
     ch = chr(cp)
-    if ch in '"\'\\':
-        return f'"\\{ch}"'
-    if ch == '\r':
-        return '"\\r"'
-    if ch == '\n':
-        return '"\\n"'
-    if ch == '\t':
-        return '"\\t"'
-    if ch == '\v':
-        return '"\\v"'
+    if ch in ESCAPES:
+        return f'"{ESCAPES[ch]}"'
     gc = ud.category(ch)
-    if gc.startswith("Z") or gc.startswith("C") or gc.startswith('M'):
-        return '"' + ch.encode(
-            encoding='ascii',
-            errors='backslashreplace'
-        ).decode(encoding='utf-8') + '"'
+    if gc.startswith('Z') or gc.startswith('C') or gc.startswith('M'):
+        asc = ch.encode(encoding='ascii', errors='backslashreplace')
+        ch = asc.decode(encoding='utf-8')
     return f'"{ch}"'
 
-def encode_range(rg):
-    if len(rg) == 1:
-        return encode_cp(rg.start)
-    return encode_cp(rg.start) + ".." + encode_cp(rg.stop - 1)
 
-def encode_list(lst):
-    return (
-        ('\n   |'.join(encode_range(rg)
-            for rg in compress_ranges(lst)))
-    )
+def classify(cp: int) -> None:
+    """Classify a given code point.
+
+    Modifies the global variable ``classes``.
+
+    Parameters
+    ----------
+    cp : int
+        the code point
+    """
+    try:
+        ch = chr(cp)
+        if ch in SYNTAX:
+            return
+        cl = ud.category(ch)
+        for class_name, (cats, incs) in CLASS_INFO.items():
+            if ch in incs or any(cl.startswith(cat) for cat in cats):
+                classes[class_name].append(cp)
+    except UnicodeEncodeError:
+        return
+
 
 for cp in range(MAX_CP + 1):
     classify(cp)

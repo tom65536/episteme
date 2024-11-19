@@ -1,8 +1,24 @@
 
 %import cc.SPACE
-%import lexical.IDENTIFIER
+%import lexical (COMMENT, IDENTIFIER, _NEWLINE)
+
+%declare _INDENT _DEDENT DOC
 
 %ignore SPACE
+%ignore COMMENT
 
-start: (IDENTIFIER)+
+start: [[_NEWLINE] DOC] (_NEWLINE | stmt)*
 
+?stmt: simple_stmt | compound_stmt
+?simple_stmt: small_stmt (";" small_stmt)* [";"] _NEWLINE
+
+?small_stmt: "unreachable"
+
+?compound_stmt: expr_stmt
+
+expr_stmt: expr (":" suite | _NEWLINE)
+    | DOC "def" expr (":" suite | _NEWLINE) -> fn
+
+suite: simple_stmt | _NEWLINE _INDENT stmt+ _DEDENT
+
+expr: IDENTIFIER+

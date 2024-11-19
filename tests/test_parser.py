@@ -1,9 +1,36 @@
+"""Test cases for the parser."""
 
+import pathlib
+
+import pytest
 
 from episteme.parser import create_parser
 
 
-def test_parser() -> None:
+@pytest.fixture
+def epi_script() -> str:
+    """Load the script file ``epi_script.epic``.
 
+    Returns
+    -------
+    str
+        the loaded source
+    """
+    return (pathlib.Path(__file__).parent / 'epi_script.epic').read_text(
+        encoding='utf-8',
+    )
+
+
+def test_parser(epi_script: str) -> None:
+    """Check whether the given script gets parsed without errors.
+
+    Parameter
+    ---------
+    epi_script ; str
+        the script to be parsed
+    """
     parser = create_parser()
-    ast = parser.parse(""" x y z """)
+
+    result = parser.parse(epi_script)
+
+    assert result is not None
