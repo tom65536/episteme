@@ -34,3 +34,12 @@ def test_parser(epi_script: str) -> None:
     result = parser.parse(epi_script)
 
     assert result is not None
+
+
+def test_atom() -> None:
+    """Check the atoms syntax."""
+    parser = create_parser()
+
+    result = parser.parse('1')
+
+    assert result is not None

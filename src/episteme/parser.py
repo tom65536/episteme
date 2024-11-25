@@ -1,10 +1,10 @@
 """Parser module."""
 
-import re
 from collections.abc import Iterator
 
+import regex
 from lark import Lark
-from lark.indenter import PythonIndenter
+from lark.indenter import Indenter
 from lark.lark import PostLex
 from lark.lexer import Token
 
@@ -15,15 +15,20 @@ __all__ = [
 ]
 
 
-def create_parser() -> Lark:
+def create_parser(start: str = 'start') -> Lark:
     """Create a parser for the EPISTEME language.
+
+    Parameter
+    --------
+    start : str
+        start symbol (Default ``start``)
 
     Returns
     -------
     Lark
         generated cluster
     """
-    indenter = PythonIndenter()
+    indenter = EpistemeIndenter()
     doc_extractor = DocExtractor()
     pipeline = PostLexChain(indenter, doc_extractor)
     return Lark.open_from_package(
@@ -31,8 +36,11 @@ def create_parser() -> Lark:
         'core.lark',
         ('grammar',),
         debug=True,
-        strict=True,
+        g_regex_flags=regex.VERSION1,
         postlex=pipeline,
+        regex=True,
+        start=start,
+        strict=True,
     )
 
 
@@ -69,8 +77,8 @@ class DocExtractor(PostLex):
     def __init__(self) -> None:
         self._acc: str = ''
         self._mod: bool = True
-        self._comment_strip: re.Pattern = re.compile(self.comment_strip)
-        self._comment_skip: re.Pattern = re.compile(self.comment_skip)
+        self._comment_strip: regex.Pattern = regex.compile(self.comment_strip)
+        self._comment_skip: regex.Pattern = regex.compile(self.comment_skip)
 
     def process(self, stream: Iterator[Token]) -> Iterator[Token]:
         """Process the tokens of a stream.
@@ -87,8 +95,8 @@ class DocExtractor(PostLex):
         """
         self._acc = ''
         self._mod = True
-        self._comment_strip = re.compile(self.comment_strip)
-        self._comment_skip = re.compile(self.comment_skip)
+        self._comment_strip = regex.compile(self.comment_strip)
+        self._comment_skip = regex.compile(self.comment_skip)
         return self._process(stream)
 
     def _process(self, stream: Iterator[Token]) -> Iterator[Token]:
@@ -128,6 +136,22 @@ class DocExtractor(PostLex):
         )
         self._acc = ''
         self._mod = False
+
+
+class EpistemeIndenter(Indenter):
+    """A postlexer that "injects" _INDENT/_DEDENT tokens.
+
+    The indenter is based on indentation, according to the Python syntax.
+
+    See also: the ``postlex`` option in `Lark`.
+    """
+
+    NL_type = '_NEWLINE'
+    OPEN_PAREN_types = ['(', '[', '{', 'STRING_LEFT']
+    CLOSE_PAREN_types = [')', ']', '}', 'STRING_RIGHT']
+    INDENT_type = '_INDENT'
+    DEDENT_type = '_DEDENT'
+    tab_len = 8
 
 
 class PostLexChain(PostLex):

@@ -1,6 +1,42 @@
 
-%import cc.SPACE
-%import lexical (COMMENT, IDENTIFIER, _NEWLINE)
+%import .lexical.SPACE
+%import .lexical.COMMENT
+%import .lexical.IDENTIFIER
+%import .lexical._NEWLINE
+%import .lexical.DECIMAL_LITERAL
+%import .lexical.RADICAL_LITERAL
+%import .lexical.FLOAT_LITERAL
+%import .lexical.STRING_FULL
+%import .lexical.STRING_LEFT
+%import .lexical.STRING_MID
+%import .lexical.STRING_RIGHT
+%import .lexical.PLUS
+%import .lexical.MINUS
+%import .lexical.AST
+%import .lexical.DIV
+%import .lexical.IDIV
+%import .lexical.MOD
+%import .lexical.DIVMOD
+%import .lexical.POW
+%import .lexical.AND
+%import .lexical.OR
+%import .lexical.XOR
+%import .lexical.NOT
+%import .lexical.GT
+%import .lexical.LT
+%import .lexical.GE
+%import .lexical.LE
+%import .lexical.NE
+%import .lexical.IN
+%import .lexical.EQ
+%import .lexical.REQUIRE
+%import .lexical.AS
+%import .lexical.ALIAS
+%import .lexical.OPI
+%import .lexical.STRIDENT
+%import .lexical.STRESC
+%import .lexical.ANONYMOUS
+
 
 %declare _INDENT _DEDENT DOC
 
@@ -21,4 +57,47 @@ expr_stmt: expr (":" suite | _NEWLINE)
 
 suite: simple_stmt | _NEWLINE _INDENT stmt+ _DEDENT
 
-expr: IDENTIFIER+
+expr: quantity_expr+
+
+?quantity_expr: _atom ["'" quant_unit]
+
+quant_unit: IDENTIFIER
+    | "(" [quant_unit_expr] ")"
+
+quant_unit_expr: quant_atom
+    | quant_unit_expr AST quant_atom
+    | quant_unit_expr DIV quant_atom
+
+quant_atom: quant_unit [POW fractional]
+
+fractional: signed_integer [DIV signed_integer]
+
+signed_integer: [PLUS|MINUS](DECIMAL_LITERAL|RADICAL_LITERAL)
+
+_atom: IDENTIFIER
+    | DECIMAL_LITERAL
+    | RADICAL_LITERAL
+    | FLOAT_LITERAL
+    | STRING_FULL
+    | STRIDENT
+    | STRESC
+    | string_interpolation
+    | named_tuple
+    | tuple_expr
+    | list_expr
+    | set_expr
+    | map_expr
+    | "(" expr ")"
+    | nil
+
+nil: "(" ")"
+
+string_interpolation: STRING_LEFT expr? (STRING_MID expr?)* STRING_RIGHT
+
+named_tuple: "(" tuple_binding ("," tuple_binding)* [","] ")"
+tuple_binding: IDENTIFIER ":" expr
+tuple_expr: "(" expr "," [expr ("," expr)* [","]] ")"
+list_expr: "[" [expr ("," expr)* [","]] "]"
+set_expr: "{" [expr ("," expr)* [","]] "}"
+map_expr: "{" map_binding ("," map_binding)* [","] "}" | "{" ":" "}"
+map_binding: expr ":" expr

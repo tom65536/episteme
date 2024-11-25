@@ -18,7 +18,7 @@ classifiers = [
 ]
 dynamic = ["version", "description"]
 dependencies = [
-    "lark[interegular]~=1.1"
+    "lark[interegular,regex]~=1.1"
 ]
 requires-python = ">=3.11"
 
