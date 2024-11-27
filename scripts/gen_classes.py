@@ -19,7 +19,7 @@ ESCAPES = {
 MAX_CP = 0x10FFFF
 
 # Symbols not to be included otherwise
-SYNTAX = '$,.;:#()[]}{\"\'!?`\\=@'
+SYNTAX = '$,.;:#()[]}{\"\'!?`\\=@+-*/<>|&%^'
 
 # Map non-terminals to pairs of Unicode classes and characters
 # which should be included in their definitions.
@@ -27,7 +27,7 @@ CLASS_INFO = {
     'ID_START': (('L', 'Nl', 'Sc'), ''),
     'ID_MEDIAL': (('Pc',), '_'),
     'ID_CONT': (('L', 'Mn', 'Mc', 'Nl', 'Nd', 'Sc'), ''),
-    'OPERATORS': (('Sm',), '+-*/<>^~|&%'),
+    'OPERATORS': (('Sm',), ''),
     'SPACE': (('Zs',), '\t'),
     'DIGIT': (('Nd',), ''),
 }

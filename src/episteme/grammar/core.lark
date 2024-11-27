@@ -52,27 +52,14 @@ start: [[_NEWLINE] DOC] (_NEWLINE | stmt)*
 
 ?compound_stmt: expr_stmt
 
-expr_stmt: expr (":" suite | _NEWLINE)
-    | DOC "def" expr (":" suite | _NEWLINE) -> fn
+expr_stmt: _expr (":" suite | _NEWLINE)
+    | DOC "def" _expr (":" suite | _NEWLINE) -> fn
 
 suite: simple_stmt | _NEWLINE _INDENT stmt+ _DEDENT
 
-expr: quantity_expr+
+test_expr: DOC _expr
 
-?quantity_expr: _atom ["'" quant_unit]
-
-quant_unit: IDENTIFIER
-    | "(" [quant_unit_expr] ")"
-
-quant_unit_expr: quant_atom
-    | quant_unit_expr AST quant_atom
-    | quant_unit_expr DIV quant_atom
-
-quant_atom: quant_unit [POW fractional]
-
-fractional: signed_integer [DIV signed_integer]
-
-signed_integer: [PLUS|MINUS](DECIMAL_LITERAL|RADICAL_LITERAL)
+_expr: _atom+
 
 _atom: IDENTIFIER
     | DECIMAL_LITERAL
@@ -81,23 +68,48 @@ _atom: IDENTIFIER
     | STRING_FULL
     | STRIDENT
     | STRESC
-    | string_interpolation
-    | named_tuple
-    | tuple_expr
-    | list_expr
-    | set_expr
-    | map_expr
-    | "(" expr ")"
-    | nil
 
-nil: "(" ")"
+// expr: quantity_expr+
 
-string_interpolation: STRING_LEFT expr? (STRING_MID expr?)* STRING_RIGHT
-
-named_tuple: "(" tuple_binding ("," tuple_binding)* [","] ")"
-tuple_binding: IDENTIFIER ":" expr
-tuple_expr: "(" expr "," [expr ("," expr)* [","]] ")"
-list_expr: "[" [expr ("," expr)* [","]] "]"
-set_expr: "{" [expr ("," expr)* [","]] "}"
-map_expr: "{" map_binding ("," map_binding)* [","] "}" | "{" ":" "}"
-map_binding: expr ":" expr
+// ?quantity_expr: _atom ["'" quant_unit]
+//
+// quant_unit: IDENTIFIER
+//     | "(" [quant_unit_expr] ")"
+//
+// quant_unit_expr: quant_atom
+//     | quant_unit_expr AST quant_atom
+//     | quant_unit_expr DIV quant_atom
+//
+// quant_atom: quant_unit [POW fractional]
+//
+// fractional: signed_integer [DIV signed_integer]
+//
+// signed_integer: [PLUS|MINUS](DECIMAL_LITERAL|RADICAL_LITERAL)
+//
+// _atom: IDENTIFIER
+//     | DECIMAL_LITERAL
+//     | RADICAL_LITERAL
+//     | FLOAT_LITERAL
+//     | STRING_FULL
+//     | STRIDENT
+//     | STRESC
+//     | string_interpolation
+//     | named_tuple
+//     | tuple_expr
+//     | list_expr
+//     | set_expr
+//     | map_expr
+//     | "(" expr ")"
+//     | nil
+//
+// nil: "(" ")"
+//
+// string_interpolation: STRING_LEFT expr? (STRING_MID expr?)* STRING_RIGHT
+//
+// named_tuple: "(" tuple_binding ("," tuple_binding)* [","] ")"
+// tuple_binding: IDENTIFIER ":" expr
+// tuple_expr: "(" expr "," [expr ("," expr)* [","]] ")"
+// list_expr: "[" [expr ("," expr)* [","]] "]"
+// set_expr: "{" [expr ("," expr)* [","]] "}"
+// map_expr: "{" map_binding ("," map_binding)* [","] "}" | "{" ":" "}"
+// map_binding: expr ":" expr

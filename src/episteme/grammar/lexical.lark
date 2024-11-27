@@ -2,16 +2,16 @@
 # Lexical symbols for EPISTEME.
 #
 
-ID_START: /[[\p{L}\p{Nl}\p{Sc}]--[$]]/
-ID_MEDIAL: /[\p{Pc}]/
-ID_CONT: /[[\p{L}\p{Mn}\p{Mc}\p{Nl}\p{Nd}\p{Sc}]--[$]]/
+ID_START: /[\p{L}\p{Nl}\p{Sc}]/
+ID_MEDIAL: /[\p{Pc}]/ | "_"
+ID_CONT: /[\p{L}\p{Mn}\p{Mc}\p{Nl}\p{Nd}\p{Sc}]/
 OPERATORS: /[[\p{Sm}]--[+<>=|]]/
-SPACE: /[\p{Zs}\t]/
+SPACE: /[\p{Zs}]/ | "\t"
 DIGIT: /[\p{Nd}]/
 
 # Po: !  " # % & ' * , .  / : ; ?  @ \
 # Sm: + < = >  | ~
-# Sk: ^ `
+# Sk: ^ ` _
 
 STRING_FULL: /"[^"`]*"/
 STRING_LEFT: /"[^"`]*`/
@@ -19,53 +19,52 @@ STRING_MID: /`[^"`]*`/
 STRING_RIGHT: /`[^"`]*"/
 
 DIGITS: DIGIT+ (ID_MEDIAL DIGIT+)*
-MAGNITUDE: "h" | "k" | "M" | "G" | "T" | "P" | "X" | "Z" | "Y" |  "R" | "Q"
+MAGNITUDE: "h" | "k" | "M" | "G" | "T" | "P" | "X" | "Z" | "Y" | "R" | "Q"
 FRACM: "d" | "c" | "m" | "u" | "n" | "p" | "f" | "a" | "z" | "y" | "r" | "q"
-DECIMAL_LITERAL: DIGITS [MAGNITUDE]
 RADIX: DIGIT [DIGIT]
 XDIGIT: DIGIT | "A".."Z" | "a".."z"
 XDIGITS: XDIGIT+ (ID_MEDIAL XDIGIT+)*
-RADICAL_LITERAL: RADIX "`" XDIGITS
-INTEGER_LITERAL.2: DECIMAL_LITERAL | RADICAL_LITERAL
-FLOAT_LITERAL.2: DIGITS "." DIGITS ["E"i ["+"|"-"] DIGIT+][MAGNITUDE|FRACM]
 
-PLUS.3: "+"
-MINUS.3: "-"
-AST.3: "*"
-DIV.3: "/"
-IDIV.3: "//"
-MOD.3: "mod"i | "%"
-DIVMOD.3: "/%"
-POW.3: "^"
-AND.3: "and"i
-OR.3: "or"i
-XOR.3: "xor"i
-NOT.3: "not"i
-GT.3: ">"
-LT.3: "<"
-GE.3: ">="
-LE.3: "<="
-NE.3: "<>"
-IN.3: "in"i
-EQ.3: "=="
+DECIMAL_LITERAL: DIGITS [MAGNITUDE]
+RADICAL_LITERAL: RADIX "$" XDIGITS
+FLOAT_LITERAL: DIGITS "." DIGITS ["E"i ["+"|"-"] DIGIT+][MAGNITUDE|FRACM]
 
-REQUIRE.3: "require"i
-AS.3: "as"i
-ALIAS.3: "alias"i
+PLUS: "+"
+MINUS: "-"
+AST: "*"
+DIV: "/"
+IDIV: "//"
+MOD: "mod"i | "%"
+DIVMOD: "/%"
+POW: "^"
+AND: "and"i
+OR: "or"i
+XOR: "xor"i
+NOT: "not"i
+GT: ">"
+LT: "<"
+GE: ">="
+LE: "<="
+NE: "<>"
+IN: "in"i
+EQ: "=="
+ASSIGN: "=="
 
-OP_NAME: OPERATORS
-    | PLUS | MINUS | AST | DIV | IDIV | MOD
-    | DIVMOD | POW | AND | OR | XOR | NOT | GT | LT | GE | LE
-    | NE | IN | EQ
-IDENTIFIER.2: ID_START (ID_CONT)* (ID_MEDIAL (ID_CONT)+)*
-    | "\\" OP_NAME
+REQUIRE: "require"i
+AS: "as"i
+ALIAS: "alias"i
 
+IDENTIFIER: ID_START (ID_MEDIAL? ID_CONT)*
+    | "\\" OPERATORS
+    | "\\" ( PLUS | MINUS | AST | DIV | IDIV | MOD )
+    | "\\" ( DIVMOD | POW | AND | OR | XOR | NOT | GT | LT | GE | LE )
+    | "\\" ( NE | IN | EQ )
 
-OPI.2: "\\" IDENTIFIER
-STRIDENT.2: /\\"[^"]*"/
-STRESC.2: "\\" (DECIMAL_LITERAL|RADICAL_LITERAL)
+OPI: "\\" IDENTIFIER
+STRIDENT: "\\" STRING_FULL
+STRESC: "\\" (DECIMAL_LITERAL|RADICAL_LITERAL)
 
-ANONYMOUS.2: "_"
+ANONYMOUS: "_"
 
 COMMENT: /[#\uFE5F\uFF03][^\n\r]*/
 

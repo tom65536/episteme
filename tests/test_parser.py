@@ -36,10 +36,31 @@ def test_parser(epi_script: str) -> None:
     assert result is not None
 
 
-def test_atom() -> None:
-    """Check the atoms syntax."""
-    parser = create_parser()
+@pytest.mark.parametrize(
+    ('expr', 'expected_type'),
+    [
+        ('1', 'DECIMAL_LITERAL'),
+        ('123k', 'DECIMAL_LITERAL'),
+        ('123_000', 'DECIMAL_LITERAL'),
+        ('\u0CE8_000', 'DECIMAL_LITERAL'),
+        ('16$C0FFEE', 'RADICAL_LITERAL'),
+        ('foo', 'IDENTIFIER'),
+        ('foo_bar', 'IDENTIFIER'),
+        ('δx_π', 'IDENTIFIER'),
+        ('\\∇', 'IDENTIFIER'),
+        ('\\and', 'IDENTIFIER'),
+        ('\\"LATIN CAPITAL LETTER MIDDLE-WELSH LL"', 'STRIDENT'),
+        ('\\16$1EFA', 'STRESC'),
+        ('7.3E-6p', 'FLOAT_LITERAL'),
+    ],
+)
+def test_expr(expr: str, expected_type: str) -> None:
+    """Check the expression syntax."""
+    parser = create_parser('test_expr')
 
-    result = parser.parse('1')
+    result = parser.parse(expr)
 
     assert result is not None
+    assert result.data == 'test_expr'
+    assert result.children[0].type == 'DOC'
+    assert result.children[1].type == expected_type, result.pretty()
