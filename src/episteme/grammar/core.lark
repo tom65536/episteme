@@ -68,6 +68,31 @@ _atom: IDENTIFIER
     | STRING_FULL
     | STRIDENT
     | STRESC
+    | string_interpolation
+    | tuple_expr
+    | named_tuple
+    | nil
+    | list_expr
+    | set_expr
+    | map_expr
+    | "(" _expr ")"
+
+string_interpolation: STRING_LEFT _expr? (STRING_MID _expr?)* STRING_RIGHT
+
+nil: "(" ")"
+
+named_tuple: "(" tuple_binding ("," tuple_binding)* [","] ")"
+tuple_binding: IDENTIFIER ":" _expr
+
+tuple_expr: "(" _expr "," [_expr ("," _expr)* [","]] ")"
+
+list_expr: "[" [_expr ("," _expr)* [","]] "]"
+
+set_expr: "{" [_expr ("," _expr)* [","]] "}"
+
+map_expr: "{" map_binding ("," map_binding)* [","] "}"
+    | "{" ":" "}"
+map_binding: _expr ":" _expr
 
 // expr: quantity_expr+
 
@@ -86,30 +111,3 @@ _atom: IDENTIFIER
 //
 // signed_integer: [PLUS|MINUS](DECIMAL_LITERAL|RADICAL_LITERAL)
 //
-// _atom: IDENTIFIER
-//     | DECIMAL_LITERAL
-//     | RADICAL_LITERAL
-//     | FLOAT_LITERAL
-//     | STRING_FULL
-//     | STRIDENT
-//     | STRESC
-//     | string_interpolation
-//     | named_tuple
-//     | tuple_expr
-//     | list_expr
-//     | set_expr
-//     | map_expr
-//     | "(" expr ")"
-//     | nil
-//
-// nil: "(" ")"
-//
-// string_interpolation: STRING_LEFT expr? (STRING_MID expr?)* STRING_RIGHT
-//
-// named_tuple: "(" tuple_binding ("," tuple_binding)* [","] ")"
-// tuple_binding: IDENTIFIER ":" expr
-// tuple_expr: "(" expr "," [expr ("," expr)* [","]] ")"
-// list_expr: "[" [expr ("," expr)* [","]] "]"
-// set_expr: "{" [expr ("," expr)* [","]] "}"
-// map_expr: "{" map_binding ("," map_binding)* [","] "}" | "{" ":" "}"
-// map_binding: expr ":" expr

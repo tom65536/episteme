@@ -52,9 +52,10 @@ def test_parser(epi_script: str) -> None:
         ('\\"LATIN CAPITAL LETTER MIDDLE-WELSH LL"', 'STRIDENT'),
         ('\\16$1EFA', 'STRESC'),
         ('7.3E-6p', 'FLOAT_LITERAL'),
+        ('(3.1415)', 'FLOAT_LITERAL'),
     ],
 )
-def test_expr(expr: str, expected_type: str) -> None:
+def test_expr_tokens(expr: str, expected_type: str) -> None:
     """Check the expression syntax."""
     parser = create_parser('test_expr')
 
@@ -64,3 +65,41 @@ def test_expr(expr: str, expected_type: str) -> None:
     assert result.data == 'test_expr'
     assert result.children[0].type == 'DOC'
     assert result.children[1].type == expected_type, result.pretty()
+
+
+@pytest.mark.parametrize(
+    ('expr', 'expected_type'),
+    [
+        ('"X `y` Z"', 'string_interpolation'),
+        ('(x: 1)', 'named_tuple'),
+        ('(x: 1,)', 'named_tuple'),
+        ('(x: 1, y: 2)', 'named_tuple'),
+        ('(x: 1, y: 2,)', 'named_tuple'),
+        ('()', 'nil'),
+        ('(1,)', 'tuple_expr'),
+        ('(1, 2)', 'tuple_expr'),
+        ('(1, 2,)', 'tuple_expr'),
+        ('[]', 'list_expr'),
+        ('[1]', 'list_expr'),
+        ('[1,]', 'list_expr'),
+        ('[1,2]', 'list_expr'),
+        ('{}', 'set_expr'),
+        ('{1}', 'set_expr'),
+        ('{1,}', 'set_expr'),
+        ('{1,2}', 'set_expr'),
+        ('{:}', 'map_expr'),
+        ('{1: 2}', 'map_expr'),
+        ('{1: 2,}', 'map_expr'),
+        ('{1: 2, 3: 4}', 'map_expr'),
+    ],
+)
+def test_expr_tokens(expr: str, expected_type: str) -> None:
+    """Check the expression syntax."""
+    parser = create_parser('test_expr')
+
+    result = parser.parse(expr)
+
+    assert result is not None
+    assert result.data == 'test_expr'
+    assert result.children[0].type == 'DOC'
+    assert result.children[1].data == expected_type, result.pretty()
