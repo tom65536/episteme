@@ -65,6 +65,7 @@ _expr: quantity_expr+
 ?quantity_expr: _atom ("'" quant_unit)?
 
 _atom: subscript
+    | field_accessor_function
     | DECIMAL_LITERAL
     | RADICAL_LITERAL
     | FLOAT_LITERAL
@@ -81,13 +82,9 @@ _atom: subscript
 ?subscript: _subscribable
     | subscript "." subscriber
 
+field_accessor_function: "." subscriber
+
 subscriber: name
-    | string_interpolation
-    | tuple_expr
-    | named_tuple
-    | list_expr
-    | set_expr
-    | map_expr
     | "(" _expr ")"
 
 _subscribable: ref
