@@ -36,7 +36,8 @@
 %import .lexical.STRIDENT
 %import .lexical.STRESC
 %import .lexical.ANONYMOUS
-
+%import .lexical.OF
+%import .lexical.OP_NAME
 
 %declare _INDENT _DEDENT DOC
 
@@ -59,9 +60,11 @@ suite: simple_stmt | _NEWLINE _INDENT stmt+ _DEDENT
 
 test_expr: DOC _expr
 
-_expr: _atom+
+_expr: quantity_expr+
 
-_atom: IDENTIFIER
+?quantity_expr: _atom ("'" quant_unit)?
+
+_atom: subscript
     | DECIMAL_LITERAL
     | RADICAL_LITERAL
     | FLOAT_LITERAL
@@ -70,11 +73,25 @@ _atom: IDENTIFIER
     | STRESC
     | string_interpolation
     | tuple_expr
-    | named_tuple
     | nil
     | list_expr
     | set_expr
     | map_expr
+
+?subscript: _subscribable
+    | subscript "." subscriber
+
+subscriber: name
+    | string_interpolation
+    | tuple_expr
+    | named_tuple
+    | list_expr
+    | set_expr
+    | map_expr
+    | "(" _expr ")"
+
+_subscribable: ref
+    | named_tuple
     | "(" _expr ")"
 
 string_interpolation: STRING_LEFT _expr? (STRING_MID _expr?)* STRING_RIGHT
@@ -82,7 +99,7 @@ string_interpolation: STRING_LEFT _expr? (STRING_MID _expr?)* STRING_RIGHT
 nil: "(" ")"
 
 named_tuple: "(" tuple_binding ("," tuple_binding)* [","] ")"
-tuple_binding: IDENTIFIER ":" _expr
+tuple_binding: name ":" _expr
 
 tuple_expr: "(" _expr "," [_expr ("," _expr)* [","]] ")"
 
@@ -94,20 +111,20 @@ map_expr: "{" map_binding ("," map_binding)* [","] "}"
     | "{" ":" "}"
 map_binding: _expr ":" _expr
 
-// expr: quantity_expr+
+quant_unit: name
+    | "(" [quant_unit_expr] ")"
 
-// ?quantity_expr: _atom ["'" quant_unit]
-//
-// quant_unit: IDENTIFIER
-//     | "(" [quant_unit_expr] ")"
-//
-// quant_unit_expr: quant_atom
-//     | quant_unit_expr AST quant_atom
-//     | quant_unit_expr DIV quant_atom
-//
-// quant_atom: quant_unit [POW fractional]
-//
-// fractional: signed_integer [DIV signed_integer]
-//
-// signed_integer: [PLUS|MINUS](DECIMAL_LITERAL|RADICAL_LITERAL)
-//
+quant_unit_expr: quant_atom
+    | quant_unit_expr AST quant_atom
+    | quant_unit_expr DIV quant_atom
+
+quant_atom: quant_unit [POW fractional]
+
+fractional: signed_integer [DIV signed_integer]
+
+signed_integer: [PLUS|MINUS](DECIMAL_LITERAL|RADICAL_LITERAL)
+
+
+ref: name
+
+name: IDENTIFIER | OP_NAME

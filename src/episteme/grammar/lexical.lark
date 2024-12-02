@@ -50,12 +50,14 @@ IN: "in"i
 EQ: "=="
 ASSIGN: "=="
 
-REQUIRE: "require"i
-AS: "as"i
 ALIAS: "alias"i
+AS: "as"i
+OF: "of"i
+REQUIRE: "require"i
 
 IDENTIFIER: ID_START (ID_MEDIAL? ID_CONT)*
-    | "\\" OPERATORS
+
+OP_NAME: "\\" OPERATORS
     | "\\" ( PLUS | MINUS | AST | DIV | IDIV | MOD )
     | "\\" ( DIVMOD | POW | AND | OR | XOR | NOT | GT | LT | GE | LE )
     | "\\" ( NE | IN | EQ )

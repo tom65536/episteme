@@ -44,11 +44,6 @@ def test_parser(epi_script: str) -> None:
         ('123_000', 'DECIMAL_LITERAL'),
         ('\u0CE8_000', 'DECIMAL_LITERAL'),
         ('16$C0FFEE', 'RADICAL_LITERAL'),
-        ('foo', 'IDENTIFIER'),
-        ('foo_bar', 'IDENTIFIER'),
-        ('δx_π', 'IDENTIFIER'),
-        ('\\∇', 'IDENTIFIER'),
-        ('\\and', 'IDENTIFIER'),
         ('\\"LATIN CAPITAL LETTER MIDDLE-WELSH LL"', 'STRIDENT'),
         ('\\16$1EFA', 'STRESC'),
         ('7.3E-6p', 'FLOAT_LITERAL'),
@@ -64,12 +59,20 @@ def test_expr_tokens(expr: str, expected_type: str) -> None:
     assert result is not None
     assert result.data == 'test_expr'
     assert result.children[0].type == 'DOC'
-    assert result.children[1].type == expected_type, result.pretty()
+    assert (
+        result.children[1].type == expected_type
+    ), f'Expected {expected_type} but found {result.pretty()}'
 
 
 @pytest.mark.parametrize(
     ('expr', 'expected_type'),
     [
+        ('foo', 'ref'),
+        ('foo_bar', 'ref'),
+        ('δx_π', 'ref'),
+        ('\\∇', 'ref'),
+        ('it', 'ref'),
+        ('\\and', 'ref'),
         ('"X `y` Z"', 'string_interpolation'),
         ('(x: 1)', 'named_tuple'),
         ('(x: 1,)', 'named_tuple'),
@@ -91,6 +94,12 @@ def test_expr_tokens(expr: str, expected_type: str) -> None:
         ('{1: 2}', 'map_expr'),
         ('{1: 2,}', 'map_expr'),
         ('{1: 2, 3: 4}', 'map_expr'),
+        ('x.y', 'subscript'),
+        ('x.y.z', 'subscript'),
+        ('(a: 1).(a, a, a)', 'subscript'),
+        ('it."a: `a`, b: `b`"', 'subscript'),
+        ('10\'m', 'quantity_expr'),
+        ('9.81\'(m/s^2)', 'quantity_expr'),
     ],
 )
 def test_expr_tokens(expr: str, expected_type: str) -> None:
@@ -102,4 +111,6 @@ def test_expr_tokens(expr: str, expected_type: str) -> None:
     assert result is not None
     assert result.data == 'test_expr'
     assert result.children[0].type == 'DOC'
-    assert result.children[1].data == expected_type, result.pretty()
+    assert (
+        result.children[1].data == expected_type
+    ), f'Expected {expected_type} but found {result.pretty()}'
