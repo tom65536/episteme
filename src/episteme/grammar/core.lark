@@ -2,6 +2,7 @@
 %import .lexical.SPACE
 %import .lexical.COMMENT
 %import .lexical.IDENTIFIER
+%import .lexical.OPERATORS
 %import .lexical._NEWLINE
 %import .lexical.DECIMAL_LITERAL
 %import .lexical.RADICAL_LITERAL
@@ -29,7 +30,7 @@
 %import .lexical.NE
 %import .lexical.IN
 %import .lexical.EQ
-%import .lexical.REQUIRE
+%import .lexical.USE
 %import .lexical.AS
 %import .lexical.ALIAS
 %import .lexical.OPI
@@ -38,6 +39,14 @@
 %import .lexical.ANONYMOUS
 %import .lexical.OF
 %import .lexical.OP_NAME
+%import .lexical.COMP_L
+%import .lexical.COMP_R
+%import .lexical.PIPE_L
+%import .lexical.PIPE_R
+%import .lexical.IF
+%import .lexical.ELSE
+%import .lexical.PRIVATE
+
 
 %declare _INDENT _DEDENT DOC
 
@@ -52,15 +61,98 @@ start: [[_NEWLINE] DOC] (_NEWLINE | stmt)*
 ?small_stmt: "unreachable"
 
 ?compound_stmt: expr_stmt
+    | import_stmt
 
 expr_stmt: _expr (":" suite | _NEWLINE)
     | DOC "def" _expr (":" suite | _NEWLINE) -> fn
 
 suite: simple_stmt | _NEWLINE _INDENT stmt+ _DEDENT
 
+import_stmt: USE import_spec [AS import_prefix] (":" expose_specs | _NEWLINE)
+
+import_spec: [org_name DIV] qualified_import
+    | DIV qualified_import
+    | import_dot+ local_import
+
+import_dot: "."
+
+local_import: PRIVATE ["." qualified_import]
+    | qualified_import
+
+qualified_import: import_name ("." import_name)* [","]
+
+expose_specs: expose_spec ("," expose_spec)* _NEWLINE
+    | _NEWLINE _INDENT (expose_spec _NEWLINE)+ _DEDENT
+    | AST _NEWLINE
+
+expose_spec: feature_name [AS feature_rename]
+
+import_prefix: import_name | ANONYMOUS
+
+feature_rename: feature_name (ALIAS feature_name)*
+    | ANONYMOUS
+
+feature_name: ref
+
+import_name: IDENTIFIER
+
+org_name: IDENTIFIER (MINUS IDENTIFIER)*
+
 test_expr: DOC _expr
 
-_expr: quantity_expr+
+_expr: pipe_expr
+
+?pipe_expr: conditional_expr
+    | pipe_expr PIPE_L conditional_expr
+    | conditional_expr PIPE_R pipe_expr
+
+?conditional_expr: logical_expr
+    | conditional_expr IF logical_expr
+    | conditional_expr ELSE logical_expr
+
+?logical_expr: _logical_operand
+    | _logical_operand (AND _logical_operand)+
+    | _logical_operand (OR _logical_operand)+
+    | _logical_operand (XOR _logical_operand)+
+
+_logical_operand: comparison_expr | defined_expr
+
+?comparison_expr: equality_expr
+    | equality_expr (NE equality_expr)+
+    | equality_expr ((LT | LE) equality_expr)+
+    | equality_expr ((GT | GE) equality_expr)+
+
+?equality_expr: additive_expr (EQ additive_expr)*
+
+?additive_expr: multiplicative_expr
+    | additive_expr PLUS multiplicative_expr
+    | additive_expr MINUS multiplicative_expr
+
+?multiplicative_expr: power_expr
+    | multiplicative_expr AST power_expr
+    | multiplicative_expr DIV power_expr
+    | multiplicative_expr IDIV power_expr
+    | multiplicative_expr MOD power_expr
+    | multiplicative_expr DIVMOD power_expr
+
+?signed_expr: power_expr
+    | PLUS power_expr
+    | MINUS power_expr
+
+?power_expr: application_expr (POW [PLUS | MINUS] _atom)?
+
+?application_expr: composition_expr
+    | application_expr composition_expr
+
+?composition_expr: quantity_expr
+    | composition_expr COMP_L quantity_expr
+    | composition_expr COMP_R quantity_expr
+    | composition_expr OF quantity_expr
+
+defined_expr: defined_operator quantity_expr
+    | quantity_expr defined_operator quantity_expr
+
+defined_operator: OPI | OPERATORS
 
 ?quantity_expr: _atom ("'" quant_unit)?
 
@@ -81,6 +173,7 @@ _atom: subscript
 
 ?subscript: _subscribable
     | subscript "." subscriber
+    | subscript "?." subscriber -> nullable_subscript
 
 field_accessor_function: "." subscriber
 

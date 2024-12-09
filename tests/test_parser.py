@@ -99,6 +99,11 @@ def test_expr_tokens(expr: str, expected_type: str) -> None:
         ('.σ', 'field_accessor_function'),
         ('10\'m', 'quantity_expr'),
         ('9.81\'(m/s^2)', 'quantity_expr'),
+        ('f << g', 'composition_expr'),
+        ('x^2+2*x+4', 'additive_expr'),
+        ('p ⊕ q', 'defined_expr'),
+        ('e |> f |> g', 'pipe_expr'),
+        ('e \n  |> f\n   |> g', 'pipe_expr'),
     ],
 )
 def test_expr_tokens(expr: str, expected_type: str) -> None:

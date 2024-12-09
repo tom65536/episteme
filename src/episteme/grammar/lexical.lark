@@ -31,7 +31,7 @@ FLOAT_LITERAL: DIGITS "." DIGITS ["E"i ["+"|"-"] DIGIT+][MAGNITUDE|FRACM]
 
 PLUS: "+"
 MINUS: "-"
-AST: "*"
+AST.2: "*"
 DIV: "/"
 IDIV: "//"
 MOD: "mod"i | "%"
@@ -48,16 +48,23 @@ LE: "<="
 NE: "<>"
 IN: "in"i
 EQ: "=="
-ASSIGN: "=="
+ASSIGN: "="
+PIPE_L: _NEWLINE? "|>"
+PIPE_R: _NEWLINE? "<|"
+COMP_L: ">>"
+COMP_R: "<<"
 
 ALIAS: "alias"i
 AS: "as"i
+ELSE: "else"i
+IF: "if"i
 OF: "of"i
-REQUIRE: "require"i
+PRIVATE: "private"i
+USE: "use"i
 
 IDENTIFIER: ID_START (ID_MEDIAL? ID_CONT)*
 
-OP_NAME: "\\" OPERATORS
+OP_NAME.3: "\\" OPERATORS
     | "\\" ( PLUS | MINUS | AST | DIV | IDIV | MOD )
     | "\\" ( DIVMOD | POW | AND | OR | XOR | NOT | GT | LT | GE | LE )
     | "\\" ( NE | IN | EQ )
@@ -66,7 +73,7 @@ OPI: "\\" IDENTIFIER
 STRIDENT: "\\" STRING_FULL
 STRESC: "\\" (DECIMAL_LITERAL|RADICAL_LITERAL)
 
-ANONYMOUS: "_"
+ANONYMOUS: "_" (ID_CONT (ID_MEDIAL? ID_CONT)*)?
 
 COMMENT: /[#\uFE5F\uFF03][^\n\r]*/
 

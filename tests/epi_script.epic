@@ -2,6 +2,22 @@
 # Module Doc
 #
 # This is a test module.
+use /io
+use /turtle as _:
+    up
+    down as dn
+    right as rt
+    left as lt
+    forward as fd
+use ninja-inc/turtle as t:
+    spin
+    jump
+    hide
+use .private.util: *
+use ..layout.paper:
+    a4
+    letter
+
 
 # this is just a comment, ignore it
 Anström α_1
